@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,14 +15,13 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className="h-full antialiased">
       <head>
-        {/* Script do AdSense - beforeInteractive para aparecer no HTML fonte */}
-        <Script
+        {/* Script do AdSense — tag nativa para aparecer no HTML estático */}
+        <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1815564810673303"
           crossOrigin="anonymous"
-          strategy="beforeInteractive"
         />
-        {/* Metatag de verificação do AdSense (método alternativo) */}
+        {/* Metatag de verificação */}
         <meta
           name="google-adsense-account"
           content="ca-pub-1815564810673303"
