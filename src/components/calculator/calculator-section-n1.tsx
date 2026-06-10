@@ -1,14 +1,16 @@
 "use client";
 
-import type { PeriodType } from "@/types/calculator";
+import type { PeriodType, CalculatorHints } from "@/types/calculator";
 import { Badge } from "./ui/badge";
 import { NumberInput } from "./ui/number-input";
 import { SectionCard } from "./ui/section-card";
+import { formatHintBlockPartial, formatHintBlockInstitutional } from "@/lib/calculator/format";
 
 interface CalculatorSectionN1Props {
   period: PeriodType;
   n1Partial: number | null;
   n1Institutional: number | null;
+  hints: CalculatorHints;
   onN1PartialChange: (value: number | null) => void;
   onN1InstitutionalChange: (value: number | null) => void;
 }
@@ -17,6 +19,7 @@ export function CalculatorSectionN1({
   period,
   n1Partial,
   n1Institutional,
+  hints,
   onN1PartialChange,
   onN1InstitutionalChange,
 }: CalculatorSectionN1Props) {
@@ -46,6 +49,11 @@ export function CalculatorSectionN1({
             min={0}
             max={10}
             step={0.1}
+            hint={
+              hints.n1Partial !== null
+                ? formatHintBlockPartial(hints.n1Partial.direct, hints.n1Partial.n3Access)
+                : undefined
+            }
           />
         )}
         <NumberInput
@@ -55,6 +63,11 @@ export function CalculatorSectionN1({
           min={0}
           max={10}
           step={0.1}
+          hint={
+            hints.n1Institutional !== null
+              ? formatHintBlockInstitutional(hints.n1Institutional.direct, hints.n1Institutional.n3Access)
+              : undefined
+          }
         />
       </div>
     </SectionCard>

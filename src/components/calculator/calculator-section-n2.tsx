@@ -1,16 +1,18 @@
 "use client";
 
-import type { FieldEvalType } from "@/types/calculator";
+import type { FieldEvalType, CalculatorHints } from "@/types/calculator";
 import { Badge } from "./ui/badge";
 import { NumberInput } from "./ui/number-input";
 import { SectionCard } from "./ui/section-card";
 import { getN2MaxInstitutional } from "@/lib/calculator/rules";
+import { formatHintBlock, formatHintBlockPartia, formatHintBlockInstitutional } from "@/lib/calculator/format";
 
 interface CalculatorSectionN2Props {
   fieldEvaluation: FieldEvalType;
   n2Partial: number | null;
   n2Institutional: number | null;
   n2FieldScore: number | null;
+  hints: CalculatorHints;
   onN2PartialChange: (value: number | null) => void;
   onN2InstitutionalChange: (value: number | null) => void;
   onN2FieldScoreChange: (value: number | null) => void;
@@ -21,6 +23,7 @@ export function CalculatorSectionN2({
   n2Partial,
   n2Institutional,
   n2FieldScore,
+  hints,
   onN2PartialChange,
   onN2InstitutionalChange,
   onN2FieldScoreChange,
@@ -49,6 +52,11 @@ export function CalculatorSectionN2({
           min={0}
           max={10}
           step={0.1}
+          hint={
+            hints.n2Partial !== null
+              ? `Para passar direto: N2 Parcial ≥ ${hints.n2Partial.direct?.toFixed(1)}. Para garantir acesso à N3: N2 Parcial ≥ ${hints.n2Partial.n3Access?.toFixed(1)}.`
+              : undefined
+          }
         />
         <NumberInput
           label="N2 INSTITUCIONAL"
@@ -57,6 +65,11 @@ export function CalculatorSectionN2({
           min={0}
           max={n2Max}
           step={0.1}
+          hint={
+            hints.n2Institutional !== null
+              ? `Passar direto: Institucional ≥ ${hints.n2Institutional.direct?.toFixed(1)} · Acessar N3: ${hints.n2Institutional.n3Access !== null && hints.n2Institutional.n3Access <= 0 ? 'qualquer nota' : `≥ ${hints.n2Institutional.n3Access?.toFixed(1)}`} na Institucional basta.`
+              : undefined
+          }
         />
         {showFieldEval && (
           <NumberInput
@@ -69,6 +82,14 @@ export function CalculatorSectionN2({
           />
         )}
       </div>
+      {hints.n2Block !== null && (
+        <div className="mt-4 pt-4 border-t border-[#1e2d45]">
+          <p className="font-sans text-[11px] text-[#7a98b8] leading-relaxed">
+            Para passar direto: N2 <span className="text-emerald-400 font-semibold">≥ {hints.n2Block.direct?.toFixed(1)}</span>.
+            Para garantir acesso à N3: N2 <span className="text-amber-400 font-semibold">≥ {hints.n2Block.n3Access?.toFixed(1)}</span>.
+          </p>
+        </div>
+      )}
     </SectionCard>
   );
 }

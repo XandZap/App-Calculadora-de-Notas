@@ -1,9 +1,10 @@
 "use client";
 
-import { useReducer, useMemo, useCallback } from "react";
+import { useReducer, useMemo, useCallback, useState } from "react";
 import type {
   CalculatorInput,
   CalculatorDerived,
+  CalculatorHints,
   CalculatorAction,
 } from "@/types/calculator";
 import {
@@ -15,6 +16,12 @@ import {
   calcRequiredN3,
 } from "@/lib/calculator/formulas";
 import { resolveStatus, shouldEnableN3 } from "@/lib/calculator/rules";
+import {
+  calcN2Hint,
+  calcN1Hint,
+  calcN2PartialHint,
+  calcN2InstitutionalHint,
+} from "@/lib/calculator/hints";
 
 const INITIAL_STATE: CalculatorInput = {
   period: "3-8",
@@ -33,13 +40,7 @@ function calculatorReducer(
 ): CalculatorInput {
   switch (action.type) {
     case "SET_PERIOD": {
-      // Reset N1 partial e field evaluation quando muda período
-      const newState = {
-        ...state,
-        period: action.payload,
-        n1Partial: null,
-      };
-      // Só mantém fieldEvaluation no período 3-8
+      const newState = { ...state, period: action.payload, n1Partial: null };
       if (action.payload === "1-2") {
         newState.fieldEvaluation = "none";
         newState.n2FieldScore = null;
@@ -64,6 +65,8 @@ function calculatorReducer(
       return { ...state, n2FieldScore: action.payload };
     case "SET_N3_FINAL":
       return { ...state, n3Final: action.payload };
+    case "TOGGLE_N3":
+      return { ...state };
     case "RESET":
       return { ...INITIAL_STATE };
     default:
@@ -73,10 +76,13 @@ function calculatorReducer(
 
 export function useCalculator() {
   const [input, dispatch] = useReducer(calculatorReducer, INITIAL_STATE);
+  const [n3Expanded, setN3Expanded] = useState(false);
 
   const setPeriod = useCallback(
-    (payload: CalculatorInput["period"]) =>
-      dispatch({ type: "SET_PERIOD", payload }),
+    (payload: CalculatorInput["period"]) => {
+      dispatch({ type: "SET_PERIOD", payload });
+      setN3Expanded(false);
+    },
     []
   );
 
@@ -122,12 +128,18 @@ export function useCalculator() {
     []
   );
 
-  const reset = useCallback(() => dispatch({ type: "RESET" }), []);
+  const toggleN3 = useCallback(() => {
+    setN3Expanded((prev) => !prev);
+  }, []);
+
+  const reset = useCallback(() => {
+    dispatch({ type: "RESET" });
+    setN3Expanded(false);
+  }, []);
 
   const derived = useMemo<CalculatorDerived>(() => {
     const { period, fieldEvaluation } = input;
 
-    // Calcular N1
     let n1: number | null = null;
     if (period === "1-2") {
       n1 =
@@ -141,21 +153,17 @@ export function useCalculator() {
           : null;
     }
 
-    // Calcular N2
     let n2: number | null = null;
     if (input.n2Partial !== null && input.n2Institutional !== null) {
       n2 = calcN2(input.n2Partial, input.n2Institutional);
-      // Se tem field evaluation, soma ao N2
       if (fieldEvaluation === "with-field" && input.n2FieldScore !== null) {
         n2 = n2 + input.n2FieldScore;
       }
     }
 
-    // Média Parcial
     const partialAverage =
       n1 !== null && n2 !== null ? calcPartialAverage(n1, n2) : null;
 
-    // N3
     const n3Enabled = shouldEnableN3(partialAverage);
     let finalAverage: number | null = null;
     if (n3Enabled && input.n3Final !== null) {
@@ -186,9 +194,95 @@ export function useCalculator() {
     input.n3Final,
   ]);
 
+  const hints = useMemo<CalculatorHints>(() => {
+    const { period } = input;
+    const n1Final = derived.n1;
+    const n2Final = derived.n2;
+
+    const h: CalculatorHints = {
+      n2Block: null,
+      n2Partial: null,
+      n2Institutional: null,
+      n1Partial: null,
+      n1Institutional: null,
+    };
+
+    // Hint para bloco N2 (quando N1 está preenchido mas N2 ainda não)
+    if (n1Final !== null && input.n2Partial === null && input.n2Institutional === null) {
+      h.n2Block = calcN2Hint(n1Final);
+    }
+
+    // Hint para N2 Parcial (quando N1 + N2 Institucional preenchido)
+    if (n1Final !== null && input.n2Partial === null && input.n2Institutional !== null) {
+      const n2Needed = period === "1-2"
+        ? calcN1Hint(n1Final)  // no 1-2, N1 também tem parcial
+        : calcN2Hint(n1Final);
+      const targetDirect = n2Needed.direct !== null ? n2Needed.direct : 0;
+      const targetN3 = n2Needed.n3Access !== null ? n2Needed.n3Access : 0;
+      h.n2Partial = calcN2PartialHint(
+        targetDirect,
+        input.n2Institutional
+      );
+    }
+
+    // Hint para N2 Institucional (quando N1 + N2 Parcial preenchido)
+    if (n1Final !== null && input.n2Partial !== null && input.n2Institutional === null) {
+      const n2Needed = calcN2Hint(n1Final);
+      const targetDirect = n2Needed.direct !== null ? n2Needed.direct : 0;
+      const targetN3 = n2Needed.n3Access !== null ? n2Needed.n3Access : 0;
+      h.n2Institutional = calcN2InstitutionalHint(
+        targetDirect,
+        input.n2Partial
+      );
+    }
+
+    // Hint para N1 Parcial (período 1-2, quando Institucional preenchido)
+    if (period === "1-2" && input.n1Partial === null && input.n1Institutional !== null) {
+      if (n2Final !== null) {
+        const n1Needed = calcN1Hint(n2Final);
+        h.n1Partial = {
+          direct: n1Needed.direct !== null ? Math.max(0, Math.min(10, 2 * n1Needed.direct - input.n1Institutional)) : null,
+          n3Access: n1Needed.n3Access !== null ? Math.max(0, Math.min(10, 2 * n1Needed.n3Access - input.n1Institutional)) : null,
+        };
+      }
+    }
+
+    // Hint para N1 Institucional (período 1-2, quando Parcial preenchido)
+    if (period === "1-2" && input.n1Partial !== null && input.n1Institutional === null) {
+      if (n2Final !== null) {
+        const n1Needed = calcN1Hint(n2Final);
+        h.n1Institutional = {
+          direct: n1Needed.direct !== null ? Math.max(0, Math.min(10, 2 * n1Needed.direct - input.n1Partial)) : null,
+          n3Access: n1Needed.n3Access !== null ? Math.max(0, Math.min(10, 2 * n1Needed.n3Access - input.n1Partial)) : null,
+        };
+      }
+    }
+
+    return h;
+  }, [input, derived.n1, derived.n2]);
+
+  // Auto-expand N3 quando todas notas preenchidas e status é needs_n3
+  const shouldAutoExpand =
+    derived.isN3Enabled &&
+    input.n1Institutional !== null &&
+    input.n2Partial !== null &&
+    input.n2Institutional !== null &&
+    !n3Expanded;
+
+  if (shouldAutoExpand) {
+    setN3Expanded(true);
+  }
+
+  const isAllN2Filled = input.n2Partial !== null && input.n2Institutional !== null;
+  const isAllN1Filled = input.period === "1-2"
+    ? input.n1Partial !== null && input.n1Institutional !== null
+    : input.n1Institutional !== null;
+
   return {
     input,
     derived,
+    hints,
+    n3Expanded,
     setPeriod,
     setFieldEvaluation,
     setN1Partial,
@@ -197,6 +291,9 @@ export function useCalculator() {
     setN2Institutional,
     setN2FieldScore,
     setN3Final,
+    toggleN3,
     reset,
+    isAllN1Filled,
+    isAllN2Filled,
   };
 }

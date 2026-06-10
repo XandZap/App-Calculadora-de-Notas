@@ -17,6 +17,8 @@ export function CalculatorShell() {
   const {
     input,
     derived,
+    hints,
+    n3Expanded,
     setPeriod,
     setFieldEvaluation,
     setN1Partial,
@@ -25,6 +27,7 @@ export function CalculatorShell() {
     setN2Institutional,
     setN2FieldScore,
     setN3Final,
+    toggleN3,
     reset,
   } = useCalculator();
 
@@ -55,6 +58,7 @@ export function CalculatorShell() {
             period={input.period}
             n1Partial={input.n1Partial}
             n1Institutional={input.n1Institutional}
+            hints={hints}
             onN1PartialChange={setN1Partial}
             onN1InstitutionalChange={setN1Institutional}
           />
@@ -66,6 +70,7 @@ export function CalculatorShell() {
             n2Partial={input.n2Partial}
             n2Institutional={input.n2Institutional}
             n2FieldScore={input.n2FieldScore}
+            hints={hints}
             onN2PartialChange={setN2Partial}
             onN2InstitutionalChange={setN2Institutional}
             onN2FieldScoreChange={setN2FieldScore}
@@ -77,6 +82,8 @@ export function CalculatorShell() {
             isN3Enabled={derived.isN3Enabled}
             n3Final={input.n3Final}
             partialAverage={derived.partialAverage}
+            expanded={n3Expanded}
+            onToggle={toggleN3}
             onN3FinalChange={setN3Final}
           />
         </div>

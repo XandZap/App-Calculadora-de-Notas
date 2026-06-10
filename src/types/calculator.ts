@@ -31,6 +31,19 @@ export interface CalculatorDerived {
   isN3Enabled: boolean;
 }
 
+export interface CalculatorHint {
+  direct: number | null;
+  n3Access: number | null;
+}
+
+export interface CalculatorHints {
+  n2Block: CalculatorHint | null;
+  n2Partial: CalculatorHint | null;
+  n2Institutional: CalculatorHint | null;
+  n1Partial: CalculatorHint | null;
+  n1Institutional: CalculatorHint | null;
+}
+
 export type CalculatorAction =
   | { type: "SET_PERIOD"; payload: PeriodType }
   | { type: "SET_FIELD_EVAL"; payload: FieldEvalType }
@@ -40,4 +53,5 @@ export type CalculatorAction =
   | { type: "SET_N2_INSTITUTIONAL"; payload: number | null }
   | { type: "SET_N2_FIELD_SCORE"; payload: number | null }
   | { type: "SET_N3_FINAL"; payload: number | null }
-  | { type: "RESET" };
+  | { type: "RESET" }
+  | { type: "TOGGLE_N3" };
