@@ -9,6 +9,7 @@ interface NumberInputProps {
   step?: number;
   disabled?: boolean;
   hint?: string;
+  hintClassName?: string;
 }
 
 export function NumberInput({
@@ -20,6 +21,7 @@ export function NumberInput({
   step = 0.1,
   disabled = false,
   hint,
+  hintClassName = "",
 }: NumberInputProps) {
   const handleWheel = useCallback((e: React.WheelEvent<HTMLInputElement>) => {
     (e.target as HTMLInputElement).blur();
@@ -60,7 +62,7 @@ export function NumberInput({
         aria-label={label}
       />
       {hint && (
-        <p className="font-sans text-[10px] sm:text-[11px] text-[#7a98b8] mt-2 leading-relaxed">
+        <p className={`font-sans text-[10px] sm:text-[11px] text-[#7a98b8] mt-2 leading-relaxed ${hintClassName}`}>
           {hint}
         </p>
       )}

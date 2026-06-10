@@ -2,7 +2,7 @@
 
 import { useCalculator } from "@/hooks/use-calculator";
 import { shouldShowFieldEval, getN2MaxInstitutional } from "@/lib/calculator/rules";
-import { formatHintBlock, formatHintBlockInstitutional, formatHintBlockPartial } from "@/lib/calculator/format";
+import { formatHintBlockInstitutional, formatHintBlockPartial } from "@/lib/calculator/format";
 
 import { AdSenseBanner } from "./adsense-banner";
 import { CalculatorFieldEval } from "./calculator-field-eval";
@@ -67,6 +67,7 @@ export function CalculatorShell() {
                     hint: hints.n1Partial !== null
                       ? formatHintBlockPartial(hints.n1Partial.direct, hints.n1Partial.n3Access, canPassDirect)
                       : undefined,
+                    hintClassName: "lg:hidden",
                   }]
                 : []),
               {
@@ -76,6 +77,7 @@ export function CalculatorShell() {
                 hint: hints.n1Institutional !== null
                   ? formatHintBlockInstitutional(hints.n1Institutional.direct, hints.n1Institutional.n3Access, canPassDirect)
                   : undefined,
+                hintClassName: "lg:hidden",
               },
             ]}
           />
@@ -92,6 +94,7 @@ export function CalculatorShell() {
                 hint: hints.n2Partial !== null
                   ? formatHintBlockPartial(hints.n2Partial.direct, hints.n2Partial.n3Access, canPassDirect)
                   : undefined,
+                hintClassName: "lg:hidden",
               },
               {
                 label: "N2 INSTITUCIONAL",
@@ -101,6 +104,7 @@ export function CalculatorShell() {
                 hint: hints.n2Institutional !== null
                   ? formatHintBlockInstitutional(hints.n2Institutional.direct, hints.n2Institutional.n3Access, canPassDirect)
                   : undefined,
+                hintClassName: "lg:hidden",
               },
               ...(showFieldScoreInput
                 ? [{
@@ -111,26 +115,6 @@ export function CalculatorShell() {
                   }]
                 : []),
             ]}
-            bottomBlock={
-              hints.n2Block !== null ? (
-                <p className="font-sans text-[11px] text-[#7a98b8] leading-relaxed">
-                  {hints.n2Block.direct === null ? (
-                    <>
-                      Aprovação direta impossível — você já vai para a{" "}
-                      <span className="text-amber-400 font-semibold">Prova Final</span>. Para acessar a N3: N2{" "}
-                      <span className="text-amber-400 font-semibold">≥ {hints.n2Block.n3Access?.toFixed(1) ?? "—"}</span>.
-                    </>
-                  ) : canPassDirect ? (
-                    <>Para passar direto: N2 <span className="text-emerald-400 font-semibold">≥ {hints.n2Block.direct?.toFixed(1)}</span>.</>
-                  ) : (
-                    <>
-                      Para passar direto: N2 <span className="text-emerald-400 font-semibold">≥ {hints.n2Block.direct?.toFixed(1)}</span>.
-                      Para garantir acesso à N3: N2 <span className="text-amber-400 font-semibold">≥ {hints.n2Block.n3Access?.toFixed(1)}</span>.
-                    </>
-                  )}
-                </p>
-              ) : undefined
-            }
           />
 
           <div>
@@ -145,13 +129,17 @@ export function CalculatorShell() {
           </div>
         </div>
 
-        {/* Coluna Direita — Resultados (sticky em desktop) */}
+        {/* Coluna Direita — Resultados + Fórmulas (sticky em desktop) */}
         <div className="mt-[14px] lg:mt-0 space-y-[14px] lg:space-y-[18px]">
           <div className="lg:sticky lg:top-8 lg:space-y-[18px]">
             <CalculatorSummary derived={derived} input={input} hints={hints} />
             <CalculatorFormulas />
-            <CalculatorFooter />
           </div>
+        </div>
+
+        {/* Footer — full width centralizado */}
+        <div className="lg:col-span-2 mt-8">
+          <CalculatorFooter />
         </div>
 
         {/* Banner — full width abaixo das colunas */}

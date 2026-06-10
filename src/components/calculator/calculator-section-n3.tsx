@@ -23,10 +23,9 @@ export function CalculatorSectionN3({
   onN3FinalChange,
 }: CalculatorSectionN3Props) {
   return (
-    <div>
+    <SectionCard className="cursor-pointer" onClick={onToggle}>
       <div
-        className="flex items-center gap-[11px] mb-3 cursor-pointer select-none"
-        onClick={onToggle}
+        className="flex items-center gap-[11px] select-none"
         role="button"
         tabIndex={0}
         aria-expanded={expanded}
@@ -54,7 +53,7 @@ export function CalculatorSectionN3({
           height="16"
           fill="currentColor"
           viewBox="0 0 256 256"
-          className={`text-[#4d6a88] transition-transform duration-200 ${
+          className={`text-[#4d6a88] transition-transform duration-200 shrink-0 ${
             expanded ? "rotate-180" : ""
           }`}
         >
@@ -63,7 +62,7 @@ export function CalculatorSectionN3({
       </div>
 
       {expanded && (
-        <SectionCard>
+        <div className="mt-5 pt-5 border-t border-[#1e2d45]" onClick={(e) => e.stopPropagation()}>
           <NumberInput
             label="N3 — PROVA FINAL"
             value={n3Final}
@@ -85,8 +84,8 @@ export function CalculatorSectionN3({
               </span>
             </p>
           )}
-        </SectionCard>
+        </div>
       )}
-    </div>
+    </SectionCard>
   );
 }

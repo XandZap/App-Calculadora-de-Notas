@@ -9,34 +9,38 @@ declare global {
 }
 
 export function AdSenseBanner() {
-  const isInitialized = useRef(false);
+  const initialized = useRef(false);
+  const mounted = useRef(false);
 
   useEffect(() => {
-    if (isInitialized.current) return;
-    isInitialized.current = true;
+    mounted.current = true;
 
-    // Delay para garantir que o DOM já renderizou com largura > 0
+    // Espera o DOM renderizar o <ins>, depois chama push uma única vez
     const timer = setTimeout(() => {
-      try {
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
-      } catch (e) {
-        console.warn("AdSense:", e);
+      if (!initialized.current && mounted.current) {
+        initialized.current = true;
+        try {
+          (window.adsbygoogle = window.adsbygoogle || []).push({});
+        } catch (e) {
+          console.warn("AdSense:", e);
+        }
       }
-    }, 1000);
+    }, 500);
 
-    return () => clearTimeout(timer);
+    return () => {
+      mounted.current = false;
+      clearTimeout(timer);
+    };
   }, []);
 
   return (
-    <div className="mt-8 mb-4 w-full">
-      <ins
-        className="adsbygoogle"
-        style={{ display: "block", minHeight: "100px" }}
-        data-ad-client="ca-pub-1815564810673303"
-        data-ad-slot="5935621443"
-        data-ad-format="auto"
-        data-full-width-responsive="true"
-      />
-    </div>
+    <ins
+      className="adsbygoogle"
+      style={{ display: "block" }}
+      data-ad-client="ca-pub-1815564810673303"
+      data-ad-slot="5935621443"
+      data-ad-format="auto"
+      data-full-width-responsive="true"
+    />
   );
 }

@@ -3,7 +3,7 @@ import type { CalculatorHint } from "@/types/calculator";
 
 export function formatGrade(value: number | null): string {
   if (value === null || value === undefined) return PLACEHOLDER;
-  return value.toFixed(1);
+  return value.toFixed(2);
 }
 
 export function formatStatus(status: string): string {
@@ -25,10 +25,6 @@ export function formatHint(value: number | null): string {
   return `≥ ${value.toFixed(1)}`;
 }
 
-/**
- * Formata hint para o bloco N2 (média necessária na N2).
- * Se canPassDirect=true, não menciona N3.
- */
 export function formatHintBlock(
   direct: number | null,
   n3Access: number | null,
@@ -45,10 +41,6 @@ export function formatHintBlock(
   return `Para passar direto: N2 ${dir}. Para garantir acesso à N3: N2 ${acc}.`;
 }
 
-/**
- * Formata hint para campo Institucional.
- * Se canPassDirect=true, não menciona N3.
- */
 export function formatHintBlockInstitutional(
   direct: number | null,
   n3Access: number | null,
@@ -65,10 +57,6 @@ export function formatHintBlockInstitutional(
   return `Passar direto: Institucional ${dir} · Acessar N3: ${acc} na Institucional basta.`;
 }
 
-/**
- * Formata hint para campo Parcial.
- * Se canPassDirect=true, não menciona N3.
- */
 export function formatHintBlockPartial(
   direct: number | null,
   n3Access: number | null,

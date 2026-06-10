@@ -7,7 +7,13 @@ import type {
 } from "@/types/calculator";
 import { SectionCard } from "./ui/section-card";
 import { InfoBanner } from "./ui/info-banner";
-import { formatGrade, formatStatus } from "@/lib/calculator/format";
+import { formatGrade } from "@/lib/calculator/format";
+import {
+  calcN2,
+  calcN1,
+  getN1Simple,
+  calcPartialAverage,
+} from "@/lib/calculator/formulas";
 
 interface CalculatorSummaryProps {
   derived: CalculatorDerived;
@@ -33,6 +39,35 @@ export function CalculatorSummary({
 
   const showDirect = partialAverage !== null;
   const approvedDirect = partialAverage !== null && partialAverage >= 6;
+
+  // Calcula a MP MÁXIMA possível com 10 nos campos vazios
+  // Se mesmo com 10 ainda MP < 4.0 → N3 impossível
+  const maxPossibleMP = (() => {
+    const { period } = input;
+    let maxN1: number;
+    if (period === "1-2") {
+      const p = input.n1Partial ?? 10;
+      const i = input.n1Institutional ?? 10;
+      maxN1 = calcN1(p, i);
+    } else {
+      maxN1 = getN1Simple(input.n1Institutional ?? 10);
+    }
+    const p2 = input.n2Partial ?? 10;
+    const i2 = input.n2Institutional ?? 10;
+    let maxN2 = calcN2(p2, i2);
+    if (input.fieldEvaluation === "with-field" && input.n2FieldScore !== null) {
+      maxN2 = maxN2 + input.n2FieldScore;
+    }
+    return calcPartialAverage(maxN1, maxN2);
+  })();
+
+  const allFieldsFilled =
+    input.n1Institutional !== null &&
+    (input.period !== "1-2" || input.n1Partial !== null) &&
+    input.n2Partial !== null &&
+    input.n2Institutional !== null;
+
+  const n3Impossible = maxPossibleMP < 4.0;
 
   let directMessage: React.ReactNode = null;
 
@@ -79,6 +114,16 @@ export function CalculatorSummary({
             na N1 Institucional.
           </>
         );
+    } else if (hints.n2Block !== null && hints.n2Block.direct !== null) {
+      // N1 preenchido, N2 vazio → mostra "Para passar direto: N2 ≥ X"
+      directMessage = (
+        <>
+          Para passar direto: N2{" "}
+          <span className="text-emerald-400 font-semibold">
+            ≥ {formatGrade(hints.n2Block.direct)}
+          </span>
+        </>
+      );
     } else {
       directMessage = (
         <>
@@ -89,6 +134,14 @@ export function CalculatorSummary({
       );
     }
   }
+
+  // Mostra card N3 quando relevante
+  const showN3Card =
+    status === "needs_n3" ||
+    status === "approved_after_n3" ||
+    status === "failed_after_n3" ||
+    status === "failed_direct" ||
+    (status === "idle" && partialAverage !== null);
 
   return (
     <div>
@@ -114,7 +167,15 @@ export function CalculatorSummary({
           </span>
         </div>
         <div className="border-t border-[#1e2d45] pt-4 text-center">
-          {!showDirect && (
+          {!showDirect && hints.n2Block !== null && hints.n2Block.direct !== null && (
+            <p className="font-sans text-[12px] text-[#7a98b8] leading-relaxed">
+              Para passar direto: N2{" "}
+              <span className="text-emerald-400 font-semibold">
+                ≥ {formatGrade(hints.n2Block.direct)}
+              </span>
+            </p>
+          )}
+          {!showDirect && (hints.n2Block === null || hints.n2Block.direct === null) && (
             <p className="font-sans text-[11px] text-[#7a98b8]">
               Preencha N1 e N2 para ver quanto falta.
             </p>
@@ -133,54 +194,168 @@ export function CalculatorSummary({
       </SectionCard>
 
       {/* Prova Final (N3) */}
-      <div className="mt-[14px]">
-        <SectionCard>
-          <p className="font-sans text-[10px] font-bold text-amber-400/80 uppercase tracking-[0.12em] mb-3">
-            Prova Final — N3
-          </p>
-          <div className={`text-center font-sans text-sm font-semibold ${statusColor} transition-colors duration-300`}>
-            {formatStatus(status)}
-          </div>
+      {showN3Card && (
+        <div className="mt-[14px]">
+          <SectionCard>
+            <p className="font-sans text-[10px] font-bold text-amber-400/80 uppercase tracking-[0.12em] mb-3">
+              Prova Final — N3
+            </p>
 
-          {status === "needs_n3" && requiredN3 !== null && (
-            <div className="text-center font-sans text-[12px] text-[#7a98b8] mt-1">
-              Precisa de{" "}
-              <span className="text-amber-400 font-semibold">
-                {formatGrade(requiredN3)}
-              </span>{" "}
-              na N3 para ser aprovado (Média Final ≥ 5.0).
-            </div>
-          )}
-
-          {(status === "approved_after_n3" || status === "failed_after_n3") &&
-            finalAverage !== null && (
-              <div className="text-center font-sans text-[12px] text-[#7a98b8] mt-1">
-                Média Final:{" "}
-                <span className={`font-semibold ${statusColor}`}>
-                  {formatGrade(finalAverage)}
-                </span>
-              </div>
+            {/* needs_n3 com todos campos preenchidos */}
+            {status === "needs_n3" && requiredN3 !== null && allFieldsFilled && (
+              <>
+                <div className="text-center font-sans text-sm font-semibold text-amber-400">
+                  Prova Final (N3) necessária
+                </div>
+                <div className="text-center font-sans text-[12px] text-[#7a98b8] mt-1">
+                  Precisa de{" "}
+                  <span className="text-amber-400 font-semibold">
+                    {formatGrade(requiredN3)}
+                  </span>{" "}
+                  na N3 para ser aprovado (Média Final ≥ 5.0).
+                </div>
+              </>
             )}
 
-          {status === "approved_direct" && (
-            <div className="text-center font-sans text-[11px] text-[#7a98b8] mt-1">
-              Você não precisa fazer a N3.
-            </div>
-          )}
+            {/* Se não preencheu tudo, mostra hints do que falta para acessar N3 */}
+            {!allFieldsFilled && (
+              <>
+                {(() => {
+                  // Nenhum N2 preenchido → mostra hint do n2Block
+                  if (hints.n2Block !== null && input.n2Partial === null && input.n2Institutional === null) {
+                    return (
+                      <>
+                        <div className="text-center font-sans text-sm font-semibold text-amber-400">
+                          Acessar N3
+                        </div>
+                        <div className="text-center font-sans text-[12px] text-[#7a98b8] mt-1">
+                          Para garantir acesso à N3: N2{" "}
+                          <span className="text-amber-400 font-semibold">
+                            ≥ {formatGrade(hints.n2Block.n3Access ?? 0)}
+                          </span>
+                        </div>
+                      </>
+                    );
+                  }
+                  // Campo vazio: N2 Institucional
+                  if (input.n2Institutional === null && hints.n2Institutional !== null) {
+                    return (
+                      <>
+                        <div className="text-center font-sans text-sm font-semibold text-amber-400">
+                          Acessar N3
+                        </div>
+                        <div className="text-center font-sans text-[12px] text-[#7a98b8] mt-1">
+                          Para acessar a N3, você precisa de{" "}
+                          <span className="text-amber-400 font-semibold">
+                            ≥ {formatGrade(hints.n2Institutional.n3Access ?? 0)}
+                          </span>{" "}
+                          na N2 Institucional.
+                        </div>
+                      </>
+                    );
+                  }
+                  // Campo vazio: N2 Parcial
+                  if (input.n2Partial === null && hints.n2Partial !== null) {
+                    return (
+                      <>
+                        <div className="text-center font-sans text-sm font-semibold text-amber-400">
+                          Acessar N3
+                        </div>
+                        <div className="text-center font-sans text-[12px] text-[#7a98b8] mt-1">
+                          Para acessar a N3, você precisa de{" "}
+                          <span className="text-amber-400 font-semibold">
+                            ≥ {formatGrade(hints.n2Partial.n3Access ?? 0)}
+                          </span>{" "}
+                          na N2 Parcial.
+                        </div>
+                      </>
+                    );
+                  }
+                  // Campo vazio: N1 Parcial (período 1-2)
+                  if (input.n1Partial === null && hints.n1Partial !== null) {
+                    return (
+                      <>
+                        <div className="text-center font-sans text-sm font-semibold text-amber-400">
+                          Acessar N3
+                        </div>
+                        <div className="text-center font-sans text-[12px] text-[#7a98b8] mt-1">
+                          Para acessar a N3, você precisa de{" "}
+                          <span className="text-amber-400 font-semibold">
+                            ≥ {formatGrade(hints.n1Partial.n3Access ?? 0)}
+                          </span>{" "}
+                          na N1 Parcial.
+                        </div>
+                      </>
+                    );
+                  }
+                  // Campo vazio: N1 Institucional (período 1-2)
+                  if (input.n1Institutional === null && hints.n1Institutional !== null) {
+                    return (
+                      <>
+                        <div className="text-center font-sans text-sm font-semibold text-amber-400">
+                          Acessar N3
+                        </div>
+                        <div className="text-center font-sans text-[12px] text-[#7a98b8] mt-1">
+                          Para acessar a N3, você precisa de{" "}
+                          <span className="text-amber-400 font-semibold">
+                            ≥ {formatGrade(hints.n1Institutional.n3Access ?? 0)}
+                          </span>{" "}
+                          na N1 Institucional.
+                        </div>
+                      </>
+                    );
+                  }
+                  return null;
+                })()}
+              </>
+            )}
 
-          {status === "failed_direct" && (
-            <div className="text-center font-sans text-[11px] text-[#7a98b8] mt-1">
-              Média parcial abaixo de 4.0 — N3 indisponível.
-            </div>
-          )}
+            {/* Todos campos preenchidos — mostra status real (exceto needs_n3 que já foi tratado acima) */}
+            {allFieldsFilled && status !== "needs_n3" && (
+              <>
+                {n3Impossible ? (
+                  <>
+                    <div className="text-center font-sans text-sm font-semibold text-red-400">
+                      Reprovado Direto ❌
+                    </div>
+                    <div className="text-center font-sans text-[11px] text-[#7a98b8] mt-2">
+                      Média parcial abaixo de 4.0 — N3 indisponível.
+                    </div>
+                  </>
+                ) : requiredN3 !== null ? (
+                  <>
+                    <div className="text-center font-sans text-sm font-semibold text-amber-400">
+                      Prova Final (N3) necessária
+                    </div>
+                    <div className="text-center font-sans text-[12px] text-[#7a98b8] mt-1">
+                      Precisa de{" "}
+                      <span className="text-amber-400 font-semibold">
+                        {formatGrade(requiredN3)}
+                      </span>{" "}
+                      na N3 (Média Final ≥ 5.0).
+                    </div>
+                  </>
+                ) : null}
+              </>
+            )}
 
-          {status === "idle" && (
-            <div className="text-center font-sans text-[11px] text-[#7a98b8] mt-1">
-              Disponível apenas se a média parcial ficar entre 4.0 e 6.0.
-            </div>
-          )}
-        </SectionCard>
-      </div>
+            {(status === "approved_after_n3" || status === "failed_after_n3") &&
+              finalAverage !== null && (
+                <>
+                  <div className={`text-center font-sans text-sm font-semibold ${statusColor}`}>
+                    {status === "approved_after_n3" ? "Aprovado após N3! ✅" : "Reprovado após N3 ❌"}
+                  </div>
+                  <div className="text-center font-sans text-[12px] text-[#7a98b8] mt-1">
+                    Média Final:{" "}
+                    <span className={`font-semibold ${statusColor}`}>
+                      {formatGrade(finalAverage)}
+                    </span>
+                  </div>
+                </>
+              )}
+          </SectionCard>
+        </div>
+      )}
 
       <InfoBanner message="Preencha as notas que você já tem para ver o que precisa." />
     </div>

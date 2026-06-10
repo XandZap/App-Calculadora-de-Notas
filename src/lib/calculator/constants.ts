@@ -1,4 +1,4 @@
-import type { PeriodType, FieldEvalType } from "@/types/calculator";
+import type { FieldEvalType, PeriodType } from "@/types/calculator";
 
 export const PERIOD_OPTIONS: {
   value: PeriodType;
@@ -25,12 +25,12 @@ export const FIELD_EVAL_OPTIONS: {
   {
     value: "none",
     label: "Sem Avaliação de Campo",
-    subtitle: "N2 Institucional vale até 10",
+    subtitle: "N2 Institucional 10.0",
   },
   {
     value: "with-field",
     label: "Com Avaliação de Campo",
-    subtitle: "N2 Inst. vale até 9 + campo (1 pt)",
+    subtitle: "N2 Institucional 9.0 + Campo 1.0",
   },
 ];
 
@@ -60,3 +60,4 @@ export const STATUS_LABELS: Record<string, string> = {
 };
 
 export const PLACEHOLDER = "—";
+

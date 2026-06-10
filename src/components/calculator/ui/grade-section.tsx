@@ -12,6 +12,7 @@ interface GradeInput {
   min?: number;
   max?: number;
   hint?: string;
+  hintClassName?: string;
 }
 
 interface GradeSectionProps {
@@ -55,6 +56,7 @@ export function GradeSection({
             max={input.max ?? 10}
             step={0.1}
             hint={input.hint}
+            hintClassName={input.hintClassName}
           />
         ))}
       </div>
