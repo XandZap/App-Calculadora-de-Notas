@@ -163,7 +163,7 @@ export function useCalculator() {
       const institutional = input.n2Institutional ?? 0;
       n2 = calcN2(partial, institutional);
       if (fieldEvaluation === "with-field" && input.n2FieldScore !== null) {
-        n2 = n2 + input.n2FieldScore;
+        n2 = (partial + institutional + input.n2FieldScore) / 2;
       }
     }
 
@@ -215,20 +215,31 @@ export function useCalculator() {
       n1Institutional: null,
     };
 
+    const fieldScore =
+      input.fieldEvaluation === "with-field" ? input.n2FieldScore ?? 0 : 0;
+
     if (n1Final !== null && input.n2Partial === null && input.n2Institutional === null) {
       h.n2Block = calcN2Hint(n1Final);
     }
 
     if (n1Final !== null && input.n2Partial === null && input.n2Institutional !== null) {
       const n2Needed = calcN2Hint(n1Final);
-      const targetDirect = n2Needed.direct !== null ? n2Needed.direct : 0;
-      h.n2Partial = calcN2PartialHint(targetDirect, input.n2Institutional);
+      h.n2Partial = calcN2PartialHint(
+        n2Needed.direct,
+        n2Needed.n3Access,
+        input.n2Institutional,
+        fieldScore
+      );
     }
 
     if (n1Final !== null && input.n2Partial !== null && input.n2Institutional === null) {
       const n2Needed = calcN2Hint(n1Final);
-      const targetDirect = n2Needed.direct !== null ? n2Needed.direct : 0;
-      h.n2Institutional = calcN2InstitutionalHint(targetDirect, input.n2Partial);
+      h.n2Institutional = calcN2InstitutionalHint(
+        n2Needed.direct,
+        n2Needed.n3Access,
+        input.n2Partial,
+        fieldScore
+      );
     }
 
     if (period === "1-2" && input.n1Partial === null && input.n1Institutional !== null) {

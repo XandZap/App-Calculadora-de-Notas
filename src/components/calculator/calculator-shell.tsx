@@ -89,7 +89,7 @@ export function CalculatorShell() {
         {/* Coluna Direita — Resultados (sticky em desktop) */}
         <div className="mt-[14px] lg:mt-0 space-y-[14px] lg:space-y-[18px]">
           <div className="lg:sticky lg:top-8 lg:space-y-[18px]">
-            <CalculatorSummary derived={derived} />
+            <CalculatorSummary derived={derived} input={input} hints={hints} />
             <CalculatorFormulas />
             <CalculatorFooter />
           </div>
@@ -103,4 +103,3 @@ export function CalculatorShell() {
     </div>
   );
 }
-

@@ -5,7 +5,7 @@ import { Badge } from "./ui/badge";
 import { NumberInput } from "./ui/number-input";
 import { SectionCard } from "./ui/section-card";
 import { getN2MaxInstitutional } from "@/lib/calculator/rules";
-import { formatHint } from "@/lib/calculator/format";
+import { formatHintBlockPartial, formatHintBlockInstitutional } from "@/lib/calculator/format";
 
 interface CalculatorSectionN2Props {
   fieldEvaluation: FieldEvalType;
@@ -54,7 +54,7 @@ export function CalculatorSectionN2({
           step={0.1}
           hint={
             hints.n2Partial !== null
-              ? `Para passar direto: Parcial ${formatHint(hints.n2Partial.direct)}. Para garantir acesso à N3: Parcial ${formatHint(hints.n2Partial.n3Access)}.`
+              ? formatHintBlockPartial(hints.n2Partial.direct, hints.n2Partial.n3Access)
               : undefined
           }
         />
@@ -67,7 +67,7 @@ export function CalculatorSectionN2({
           step={0.1}
           hint={
             hints.n2Institutional !== null
-              ? `Passar direto: Institucional ${formatHint(hints.n2Institutional.direct)} · Acessar N3: ${formatHint(hints.n2Institutional.n3Access)} na Institucional basta.`
+              ? formatHintBlockInstitutional(hints.n2Institutional.direct, hints.n2Institutional.n3Access)
               : undefined
           }
         />
@@ -85,8 +85,18 @@ export function CalculatorSectionN2({
       {hints.n2Block !== null && (
         <div className="mt-4 pt-4 border-t border-[#1e2d45]">
           <p className="font-sans text-[11px] text-[#7a98b8] leading-relaxed">
-            Para passar direto: N2 <span className="text-emerald-400 font-semibold">≥ {hints.n2Block.direct?.toFixed(1)}</span>.
-            Para garantir acesso à N3: N2 <span className="text-amber-400 font-semibold">≥ {hints.n2Block.n3Access?.toFixed(1)}</span>.
+            {hints.n2Block.direct === null ? (
+              <>
+                Aprovação direta impossível — você já vai para a{" "}
+                <span className="text-amber-400 font-semibold">Prova Final</span>. Para acessar a N3: N2{" "}
+                <span className="text-amber-400 font-semibold">≥ {hints.n2Block.n3Access?.toFixed(1) ?? "—"}</span>.
+              </>
+            ) : (
+              <>
+                Para passar direto: N2 <span className="text-emerald-400 font-semibold">≥ {hints.n2Block.direct?.toFixed(1)}</span>.
+                Para garantir acesso à N3: N2 <span className="text-amber-400 font-semibold">≥ {hints.n2Block.n3Access?.toFixed(1)}</span>.
+              </>
+            )}
           </p>
         </div>
       )}
