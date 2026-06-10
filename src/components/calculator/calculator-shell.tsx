@@ -90,7 +90,7 @@ export function CalculatorShell() {
         </div>
 
         <div className="mb-[14px]">
-          <CalculatorSummary derived={derived} />
+          <CalculatorSummary derived={derived} input={input} hints={hints} />
         </div>
 
         <CalculatorFooter />

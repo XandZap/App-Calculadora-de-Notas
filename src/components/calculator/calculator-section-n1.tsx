@@ -4,7 +4,7 @@ import type { PeriodType, CalculatorHints } from "@/types/calculator";
 import { Badge } from "./ui/badge";
 import { NumberInput } from "./ui/number-input";
 import { SectionCard } from "./ui/section-card";
-import { formatHint } from "@/lib/calculator/format";
+import { formatHintBlockPartial, formatHintBlockInstitutional } from "@/lib/calculator/format";
 
 interface CalculatorSectionN1Props {
   period: PeriodType;
@@ -51,7 +51,7 @@ export function CalculatorSectionN1({
             step={0.1}
             hint={
               hints.n1Partial !== null
-                ? `Passar direto: Parcial ${formatHint(hints.n1Partial.direct)} · Acessar N3: ${formatHint(hints.n1Partial.n3Access)} na Parcial basta.`
+                ? formatHintBlockPartial(hints.n1Partial.direct, hints.n1Partial.n3Access)
                 : undefined
             }
           />
@@ -65,7 +65,7 @@ export function CalculatorSectionN1({
           step={0.1}
           hint={
             hints.n1Institutional !== null
-              ? `Passar direto: Institucional ${formatHint(hints.n1Institutional.direct)} · Acessar N3: ${formatHint(hints.n1Institutional.n3Access)} na Institucional basta.`
+              ? formatHintBlockInstitutional(hints.n1Institutional.direct, hints.n1Institutional.n3Access)
               : undefined
           }
         />
