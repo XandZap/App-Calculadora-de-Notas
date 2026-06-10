@@ -140,6 +140,7 @@ export function useCalculator() {
   const derived = useMemo<CalculatorDerived>(() => {
     const { period, fieldEvaluation } = input;
 
+    // Calcular N1
     let n1: number | null = null;
     if (period === "1-2") {
       n1 =
@@ -153,17 +154,24 @@ export function useCalculator() {
           : null;
     }
 
+    // Calcular N2 — se pelo menos um campo preenchido, trata vazio como 0
     let n2: number | null = null;
-    if (input.n2Partial !== null && input.n2Institutional !== null) {
-      n2 = calcN2(input.n2Partial, input.n2Institutional);
+    const hasAnyN2 =
+      input.n2Partial !== null || input.n2Institutional !== null;
+    if (hasAnyN2) {
+      const partial = input.n2Partial ?? 0;
+      const institutional = input.n2Institutional ?? 0;
+      n2 = calcN2(partial, institutional);
       if (fieldEvaluation === "with-field" && input.n2FieldScore !== null) {
         n2 = n2 + input.n2FieldScore;
       }
     }
 
+    // Média Parcial — se N1 e ao menos um campo de N2 preenchido
     const partialAverage =
-      n1 !== null && n2 !== null ? calcPartialAverage(n1, n2) : null;
+      n1 !== null && hasAnyN2 ? calcPartialAverage(n1, n2!) : null;
 
+    // N3
     const n3Enabled = shouldEnableN3(partialAverage);
     let finalAverage: number | null = null;
     if (n3Enabled && input.n3Final !== null) {
@@ -207,36 +215,22 @@ export function useCalculator() {
       n1Institutional: null,
     };
 
-    // Hint para bloco N2 (quando N1 está preenchido mas N2 ainda não)
     if (n1Final !== null && input.n2Partial === null && input.n2Institutional === null) {
       h.n2Block = calcN2Hint(n1Final);
     }
 
-    // Hint para N2 Parcial (quando N1 + N2 Institucional preenchido)
     if (n1Final !== null && input.n2Partial === null && input.n2Institutional !== null) {
-      const n2Needed = period === "1-2"
-        ? calcN1Hint(n1Final)  // no 1-2, N1 também tem parcial
-        : calcN2Hint(n1Final);
+      const n2Needed = calcN2Hint(n1Final);
       const targetDirect = n2Needed.direct !== null ? n2Needed.direct : 0;
-      const targetN3 = n2Needed.n3Access !== null ? n2Needed.n3Access : 0;
-      h.n2Partial = calcN2PartialHint(
-        targetDirect,
-        input.n2Institutional
-      );
+      h.n2Partial = calcN2PartialHint(targetDirect, input.n2Institutional);
     }
 
-    // Hint para N2 Institucional (quando N1 + N2 Parcial preenchido)
     if (n1Final !== null && input.n2Partial !== null && input.n2Institutional === null) {
       const n2Needed = calcN2Hint(n1Final);
       const targetDirect = n2Needed.direct !== null ? n2Needed.direct : 0;
-      const targetN3 = n2Needed.n3Access !== null ? n2Needed.n3Access : 0;
-      h.n2Institutional = calcN2InstitutionalHint(
-        targetDirect,
-        input.n2Partial
-      );
+      h.n2Institutional = calcN2InstitutionalHint(targetDirect, input.n2Partial);
     }
 
-    // Hint para N1 Parcial (período 1-2, quando Institucional preenchido)
     if (period === "1-2" && input.n1Partial === null && input.n1Institutional !== null) {
       if (n2Final !== null) {
         const n1Needed = calcN1Hint(n2Final);
@@ -247,7 +241,6 @@ export function useCalculator() {
       }
     }
 
-    // Hint para N1 Institucional (período 1-2, quando Parcial preenchido)
     if (period === "1-2" && input.n1Partial !== null && input.n1Institutional === null) {
       if (n2Final !== null) {
         const n1Needed = calcN1Hint(n2Final);
@@ -261,7 +254,6 @@ export function useCalculator() {
     return h;
   }, [input, derived.n1, derived.n2]);
 
-  // Auto-expand N3 quando todas notas preenchidas e status é needs_n3
   const shouldAutoExpand =
     derived.isN3Enabled &&
     input.n1Institutional !== null &&
@@ -272,11 +264,6 @@ export function useCalculator() {
   if (shouldAutoExpand) {
     setN3Expanded(true);
   }
-
-  const isAllN2Filled = input.n2Partial !== null && input.n2Institutional !== null;
-  const isAllN1Filled = input.period === "1-2"
-    ? input.n1Partial !== null && input.n1Institutional !== null
-    : input.n1Institutional !== null;
 
   return {
     input,
@@ -293,7 +280,5 @@ export function useCalculator() {
     setN3Final,
     toggleN3,
     reset,
-    isAllN1Filled,
-    isAllN2Filled,
   };
 }
