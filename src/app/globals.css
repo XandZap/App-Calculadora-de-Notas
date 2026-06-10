@@ -53,8 +53,26 @@ layer(fonts);
   }
 }
 
-/* Responsividade */
-@media (max-width: 540px) {
+/* Glow sutil ao redor do container em desktop */
+@media (min-width: 1024px) {
+  .app-container {
+    box-shadow:
+      0 0 80px rgba(139, 92, 246, 0.08),
+      0 0 30px rgba(139, 92, 246, 0.04);
+    border-radius: 24px;
+    overflow: hidden;
+  }
+}
+
+/* Hover glow nos cards */
+.card-glow {
+  transition: box-shadow 0.3s ease;
+}
+.card-glow:hover {
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.06);
+}
+
+@media (max-width: 420px) {
   body {
     background: #080d1a;
   }

@@ -56,11 +56,11 @@ export function NumberInput({
         step={step}
         disabled={disabled}
         placeholder="—"
-        className="w-full bg-[#080d1a] border-2 border-[#1e2d45] rounded-[10px] px-[14px] py-[11px] text-[30px] font-bold font-mono text-[#e2e8f0] outline-none transition-all duration-180 focus:border-[#8b5cf6] hover:border-[#2d3d5a] disabled:border-[#1a2030] disabled:text-[#1e2d45] disabled:cursor-not-allowed"
+        className="w-full bg-[#080d1a] border-2 border-[#1e2d45] rounded-[10px] px-[14px] py-[11px] min-h-[46px] text-[26px] sm:text-[30px] font-bold font-mono text-[#e2e8f0] outline-none transition-all duration-180 focus:border-[#8b5cf6] hover:border-[#2d3d5a] disabled:border-[#1a2030] disabled:text-[#1e2d45] disabled:cursor-not-allowed"
         aria-label={label}
       />
       {hint && (
-        <p className="font-sans text-[11px] text-[#7a98b8] mt-2 leading-relaxed">
+        <p className="font-sans text-[10px] sm:text-[11px] text-[#7a98b8] mt-2 leading-relaxed">
           {hint}
         </p>
       )}

@@ -1,18 +1,18 @@
 "use client";
 
 import { useCalculator } from "@/hooks/use-calculator";
-import { shouldShowFieldEval } from "@/lib/calculator/rules";
-import { AdSenseBanner } from "./adsense-banner";
+import { shouldShowFieldEval, getN2MaxInstitutional } from "@/lib/calculator/rules";
+import { formatHintBlock, formatHintBlockInstitutional, formatHintBlockPartial } from "@/lib/calculator/format";
 
-import { CalculatorHeader } from "./calculator-header";
-import { CalculatorPeriodSelector } from "./calculator-period-selector";
+import { AdSenseBanner } from "./adsense-banner";
 import { CalculatorFieldEval } from "./calculator-field-eval";
-import { CalculatorSectionN1 } from "./calculator-section-n1";
-import { CalculatorSectionN2 } from "./calculator-section-n2";
-import { CalculatorSectionN3 } from "./calculator-section-n3";
-import { CalculatorSummary } from "./calculator-summary";
 import { CalculatorFooter } from "./calculator-footer";
 import { CalculatorFormulas } from "./calculator-formulas";
+import { CalculatorHeader } from "./calculator-header";
+import { CalculatorPeriodSelector } from "./calculator-period-selector";
+import { CalculatorSectionN3 } from "./calculator-section-n3";
+import { CalculatorSummary } from "./calculator-summary";
+import { GradeSection } from "./ui/grade-section";
 
 export function CalculatorShell() {
   const {
@@ -32,70 +32,132 @@ export function CalculatorShell() {
     reset,
   } = useCalculator();
 
-  const showFieldEval = shouldShowFieldEval(input.period);
+  const showFieldEvalSection = shouldShowFieldEval(input.period);
+  const showFieldScoreInput = input.fieldEvaluation === "with-field";
+  const n2Max = getN2MaxInstitutional(input.fieldEvaluation);
+  const showTwoInputsN1 = input.period === "1-2";
+  const canPassDirect = derived.status === "approved_direct" || (derived.partialAverage !== null && derived.partialAverage >= 6);
 
   return (
-    <div className="w-full max-w-[500px] mx-auto">
+    <div className="w-full max-w-[500px] lg:max-w-[920px] mx-auto app-container">
       <CalculatorHeader onClear={reset} />
-      <main className="px-5 pt-[22px] pb-[50px]">
-        <div className="mb-[18px]">
-          <CalculatorPeriodSelector
-            value={input.period}
-            onChange={setPeriod}
-          />
-        </div>
+      <main className="px-4 sm:px-5 lg:px-8 pt-[22px] pb-[50px] lg:grid lg:grid-cols-2 lg:gap-8">
+        {/* Coluna Esquerda — Formulário */}
+        <div className="space-y-[14px] lg:space-y-[18px]">
+          <div>
+            <CalculatorPeriodSelector value={input.period} onChange={setPeriod} />
+          </div>
 
-        {showFieldEval && (
-          <div className="mb-[18px]">
-            <CalculatorFieldEval
-              value={input.fieldEvaluation}
-              onChange={setFieldEvaluation}
+          {showFieldEvalSection && (
+            <div>
+              <CalculatorFieldEval value={input.fieldEvaluation} onChange={setFieldEvaluation} />
+            </div>
+          )}
+
+          <GradeSection
+            badge={{ label: "N1", color: "emerald" }}
+            title="Nota 1 — Institucional"
+            subtitle={showTwoInputsN1 ? "(Parcial + Institucional) ÷ 2" : undefined}
+            inputs={[
+              ...(showTwoInputsN1
+                ? [{
+                    label: "N1 PARCIAL",
+                    value: input.n1Partial,
+                    onChange: setN1Partial,
+                    hint: hints.n1Partial !== null
+                      ? formatHintBlockPartial(hints.n1Partial.direct, hints.n1Partial.n3Access, canPassDirect)
+                      : undefined,
+                  }]
+                : []),
+              {
+                label: "N1 INSTITUCIONAL",
+                value: input.n1Institutional,
+                onChange: setN1Institutional,
+                hint: hints.n1Institutional !== null
+                  ? formatHintBlockInstitutional(hints.n1Institutional.direct, hints.n1Institutional.n3Access, canPassDirect)
+                  : undefined,
+              },
+            ]}
+          />
+
+          <GradeSection
+            badge={{ label: "N2", color: "purple" }}
+            title="Nota 2"
+            subtitle="(Parcial + Institucional) ÷ 2"
+            inputs={[
+              {
+                label: "N2 PARCIAL",
+                value: input.n2Partial,
+                onChange: setN2Partial,
+                hint: hints.n2Partial !== null
+                  ? formatHintBlockPartial(hints.n2Partial.direct, hints.n2Partial.n3Access, canPassDirect)
+                  : undefined,
+              },
+              {
+                label: "N2 INSTITUCIONAL",
+                value: input.n2Institutional,
+                onChange: setN2Institutional,
+                max: n2Max,
+                hint: hints.n2Institutional !== null
+                  ? formatHintBlockInstitutional(hints.n2Institutional.direct, hints.n2Institutional.n3Access, canPassDirect)
+                  : undefined,
+              },
+              ...(showFieldScoreInput
+                ? [{
+                    label: "AVALIAÇÃO DE CAMPO",
+                    value: input.n2FieldScore,
+                    onChange: setN2FieldScore,
+                    max: 1,
+                  }]
+                : []),
+            ]}
+            bottomBlock={
+              hints.n2Block !== null ? (
+                <p className="font-sans text-[11px] text-[#7a98b8] leading-relaxed">
+                  {hints.n2Block.direct === null ? (
+                    <>
+                      Aprovação direta impossível — você já vai para a{" "}
+                      <span className="text-amber-400 font-semibold">Prova Final</span>. Para acessar a N3: N2{" "}
+                      <span className="text-amber-400 font-semibold">≥ {hints.n2Block.n3Access?.toFixed(1) ?? "—"}</span>.
+                    </>
+                  ) : canPassDirect ? (
+                    <>Para passar direto: N2 <span className="text-emerald-400 font-semibold">≥ {hints.n2Block.direct?.toFixed(1)}</span>.</>
+                  ) : (
+                    <>
+                      Para passar direto: N2 <span className="text-emerald-400 font-semibold">≥ {hints.n2Block.direct?.toFixed(1)}</span>.
+                      Para garantir acesso à N3: N2 <span className="text-amber-400 font-semibold">≥ {hints.n2Block.n3Access?.toFixed(1)}</span>.
+                    </>
+                  )}
+                </p>
+              ) : undefined
+            }
+          />
+
+          <div>
+            <CalculatorSectionN3
+              isN3Enabled={derived.isN3Enabled}
+              n3Final={input.n3Final}
+              partialAverage={derived.partialAverage}
+              expanded={n3Expanded}
+              onToggle={toggleN3}
+              onN3FinalChange={setN3Final}
             />
           </div>
-        )}
-
-        <div className="mb-[14px]">
-          <CalculatorSectionN1
-            period={input.period}
-            n1Partial={input.n1Partial}
-            n1Institutional={input.n1Institutional}
-            hints={hints}
-            onN1PartialChange={setN1Partial}
-            onN1InstitutionalChange={setN1Institutional}
-          />
         </div>
 
-        <div className="mb-[14px]">
-          <CalculatorSectionN2
-            fieldEvaluation={input.fieldEvaluation}
-            n2Partial={input.n2Partial}
-            n2Institutional={input.n2Institutional}
-            n2FieldScore={input.n2FieldScore}
-            hints={hints}
-            onN2PartialChange={setN2Partial}
-            onN2InstitutionalChange={setN2Institutional}
-            onN2FieldScoreChange={setN2FieldScore}
-          />
+        {/* Coluna Direita — Resultados (sticky em desktop) */}
+        <div className="mt-[14px] lg:mt-0 space-y-[14px] lg:space-y-[18px]">
+          <div className="lg:sticky lg:top-8 lg:space-y-[18px]">
+            <CalculatorSummary derived={derived} input={input} hints={hints} />
+            <CalculatorFormulas />
+            <CalculatorFooter />
+          </div>
         </div>
 
-        <div className="mb-[14px]">
-          <CalculatorSectionN3
-            isN3Enabled={derived.isN3Enabled}
-            n3Final={input.n3Final}
-            partialAverage={derived.partialAverage}
-            expanded={n3Expanded}
-            onToggle={toggleN3}
-            onN3FinalChange={setN3Final}
-          />
+        {/* Banner — full width abaixo das colunas */}
+        <div className="lg:col-span-2">
+          <AdSenseBanner />
         </div>
-
-        <div className="mb-[14px]">
-          <CalculatorSummary derived={derived} input={input} hints={hints} />
-        </div>
-
-        <CalculatorFooter />
-        <CalculatorFormulas />
-        <AdSenseBanner />
       </main>
     </div>
   );

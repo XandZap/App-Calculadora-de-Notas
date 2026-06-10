@@ -34,12 +34,9 @@ export function CalculatorSummary({
   const showDirect = partialAverage !== null;
   const approvedDirect = partialAverage !== null && partialAverage >= 6;
 
-  // Determina qual Institucional ainda está em aberto e quanto falta nela
-  // para a aprovação direta. Reaproveita os hints já calculados.
   let directMessage: React.ReactNode = null;
 
   if (showDirect && !approvedDirect) {
-    // N2 Institucional em aberto
     if (input.n2Institutional === null && hints.n2Institutional !== null) {
       const need = hints.n2Institutional.direct;
       directMessage =
@@ -59,9 +56,7 @@ export function CalculatorSummary({
             na N2 Institucional.
           </>
         );
-    }
-    // N1 Institucional em aberto (período 1-2)
-    else if (
+    } else if (
       input.period === "1-2" &&
       input.n1Institutional === null &&
       hints.n1Institutional !== null
@@ -84,9 +79,7 @@ export function CalculatorSummary({
             na N1 Institucional.
           </>
         );
-    }
-    // Fallback: todas as notas preenchidas mas média < 6 → reprovado direto
-    else {
+    } else {
       directMessage = (
         <>
           As notas atuais não atingem a média{" "}
@@ -103,7 +96,7 @@ export function CalculatorSummary({
         Resumo
       </p>
 
-      {/* ── Aprovação Direta (sem N3) ── */}
+      {/* Aprovação Direta (sem N3) */}
       <SectionCard>
         <p className="font-sans text-[10px] font-bold text-emerald-400/80 uppercase tracking-[0.12em] mb-3">
           Aprovação Direta — sem N3
@@ -113,7 +106,7 @@ export function CalculatorSummary({
           <span className="text-[#4d6a88]">+</span>
           <span className="text-purple-400 font-medium">{formatGrade(n2)}</span>
           <span className="text-[#4d6a88]">÷ 2 =</span>
-          <span className="text-[#e2e8f0] font-bold text-base">
+          <span className="text-[#e2e8f0] font-bold text-[15px] sm:text-base">
             {formatGrade(partialAverage)}
           </span>
           <span className="text-[#7a98b8] text-[10px] font-sans font-semibold uppercase tracking-wider">
@@ -139,7 +132,7 @@ export function CalculatorSummary({
         </div>
       </SectionCard>
 
-      {/* ── Prova Final (N3) ── */}
+      {/* Prova Final (N3) */}
       <div className="mt-[14px]">
         <SectionCard>
           <p className="font-sans text-[10px] font-bold text-amber-400/80 uppercase tracking-[0.12em] mb-3">
