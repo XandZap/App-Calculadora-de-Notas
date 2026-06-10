@@ -35,7 +35,7 @@ export function CalculatorHeader({ onClear }: CalculatorHeaderProps) {
           </h1>
           <p className="mt-2 text-[12px] text-[#7a98b8] font-sans">Preencha as notas já obtidas</p>
           <p className="mt-3 text-[12px] text-[#7a98b8] font-sans">
-            Desenvolvido por <span className="text-[#e2e8f0] font-semibold">Gabriel Frantz</span>
+            Desenvolvido por <span className="text-[#e2e8f0] font-semibold">Gabriel Frantz</span> e <span className="text-[#e2e8f0] font-semibold">XandãoZap</span>
           </p>
         </div>
         <button
