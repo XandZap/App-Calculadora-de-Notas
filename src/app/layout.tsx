@@ -16,11 +16,17 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className="h-full antialiased">
       <head>
+        {/* Script do AdSense - beforeInteractive para aparecer no HTML fonte */}
         <Script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1815564810673303"
           crossOrigin="anonymous"
-          strategy="afterInteractive"
+          strategy="beforeInteractive"
+        />
+        {/* Metatag de verificação do AdSense (método alternativo) */}
+        <meta
+          name="google-adsense-account"
+          content="ca-pub-1815564810673303"
         />
       </head>
       <body className="min-h-full">{children}</body>
