@@ -1,7 +1,8 @@
 "use client";
 
 import { useCalculator } from "@/hooks/use-calculator";
-import { shouldShowFieldEval } from "@/lib/calculator/rules";
+import { shouldShowFieldEval, getN2MaxInstitutional } from "@/lib/calculator/rules";
+import { formatHint } from "@/lib/calculator/format";
 
 import { AdSenseBanner } from "./adsense-banner";
 import { CalculatorFieldEval } from "./calculator-field-eval";
@@ -9,10 +10,9 @@ import { CalculatorFooter } from "./calculator-footer";
 import { CalculatorFormulas } from "./calculator-formulas";
 import { CalculatorHeader } from "./calculator-header";
 import { CalculatorPeriodSelector } from "./calculator-period-selector";
-import { CalculatorSectionN1 } from "./calculator-section-n1";
-import { CalculatorSectionN2 } from "./calculator-section-n2";
 import { CalculatorSectionN3 } from "./calculator-section-n3";
 import { CalculatorSummary } from "./calculator-summary";
+import { GradeSection } from "./ui/grade-section";
 
 export function CalculatorShell() {
   const {
@@ -33,6 +33,8 @@ export function CalculatorShell() {
   } = useCalculator();
 
   const showFieldEval = shouldShowFieldEval(input.period);
+  const n2Max = getN2MaxInstitutional(input.fieldEvaluation);
+  const showTwoInputsN1 = input.period === "1-2";
 
   return (
     <div className="w-full max-w-[500px] lg:max-w-[920px] mx-auto app-container">
@@ -50,29 +52,82 @@ export function CalculatorShell() {
             </div>
           )}
 
-          <div>
-            <CalculatorSectionN1
-              period={input.period}
-              n1Partial={input.n1Partial}
-              n1Institutional={input.n1Institutional}
-              hints={hints}
-              onN1PartialChange={setN1Partial}
-              onN1InstitutionalChange={setN1Institutional}
-            />
-          </div>
+          <GradeSection
+            badge={{ label: "N1", color: "emerald" }}
+            title="Nota 1 — Institucional"
+            subtitle={showTwoInputsN1 ? "(Parcial + Institucional) ÷ 2" : undefined}
+            inputs={[
+              ...(showTwoInputsN1
+                ? [{
+                    label: "N1 PARCIAL",
+                    value: input.n1Partial,
+                    onChange: setN1Partial,
+                    hint: hints.n1Partial !== null
+                      ? `Passar direto: Parcial ${formatHint(hints.n1Partial.direct)} · Acessar N3: ${formatHint(hints.n1Partial.n3Access)} na Parcial basta.`
+                      : undefined,
+                  }]
+                : []),
+              {
+                label: "N1 INSTITUCIONAL",
+                value: input.n1Institutional,
+                onChange: setN1Institutional,
+                hint: hints.n1Institutional !== null
+                  ? `Passar direto: Institucional ${formatHint(hints.n1Institutional.direct)} · Acessar N3: ${formatHint(hints.n1Institutional.n3Access)} na Institucional basta.`
+                  : undefined,
+              },
+            ]}
+          />
 
-          <div>
-            <CalculatorSectionN2
-              fieldEvaluation={input.fieldEvaluation}
-              n2Partial={input.n2Partial}
-              n2Institutional={input.n2Institutional}
-              n2FieldScore={input.n2FieldScore}
-              hints={hints}
-              onN2PartialChange={setN2Partial}
-              onN2InstitutionalChange={setN2Institutional}
-              onN2FieldScoreChange={setN2FieldScore}
-            />
-          </div>
+          <GradeSection
+            badge={{ label: "N2", color: "purple" }}
+            title="Nota 2"
+            subtitle="(Parcial + Institucional) ÷ 2"
+            inputs={[
+              {
+                label: "N2 PARCIAL",
+                value: input.n2Partial,
+                onChange: setN2Partial,
+                hint: hints.n2Partial !== null
+                  ? `Para passar direto: Parcial ${formatHint(hints.n2Partial.direct)}. Para garantir acesso à N3: Parcial ${formatHint(hints.n2Partial.n3Access)}.`
+                  : undefined,
+              },
+              {
+                label: "N2 INSTITUCIONAL",
+                value: input.n2Institutional,
+                onChange: setN2Institutional,
+                max: n2Max,
+                hint: hints.n2Institutional !== null
+                  ? `Passar direto: Institucional ${formatHint(hints.n2Institutional.direct)} · Acessar N3: ${formatHint(hints.n2Institutional.n3Access)} na Institucional basta.`
+                  : undefined,
+              },
+              ...(showFieldEval
+                ? [{
+                    label: "AVALIAÇÃO DE CAMPO",
+                    value: input.n2FieldScore,
+                    onChange: setN2FieldScore,
+                    max: 1,
+                  }]
+                : []),
+            ]}
+            bottomBlock={
+              hints.n2Block !== null ? (
+                <p className="font-sans text-[11px] text-[#7a98b8] leading-relaxed">
+                  {hints.n2Block.direct === null ? (
+                    <>
+                      Aprovação direta impossível — você já vai para a{" "}
+                      <span className="text-amber-400 font-semibold">Prova Final</span>. Para acessar a N3: N2{" "}
+                      <span className="text-amber-400 font-semibold">≥ {hints.n2Block.n3Access?.toFixed(1) ?? "—"}</span>.
+                    </>
+                  ) : (
+                    <>
+                      Para passar direto: N2 <span className="text-emerald-400 font-semibold">≥ {hints.n2Block.direct?.toFixed(1)}</span>.
+                      Para garantir acesso à N3: N2 <span className="text-amber-400 font-semibold">≥ {hints.n2Block.n3Access?.toFixed(1)}</span>.
+                    </>
+                  )}
+                </p>
+              ) : undefined
+            }
+          />
 
           <div>
             <CalculatorSectionN3
