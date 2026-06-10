@@ -5,7 +5,7 @@ import { Badge } from "./ui/badge";
 import { NumberInput } from "./ui/number-input";
 import { SectionCard } from "./ui/section-card";
 import { getN2MaxInstitutional } from "@/lib/calculator/rules";
-import { formatHintBlock, formatHintBlockPartia, formatHintBlockInstitutional } from "@/lib/calculator/format";
+import { formatHint } from "@/lib/calculator/format";
 
 interface CalculatorSectionN2Props {
   fieldEvaluation: FieldEvalType;
@@ -54,7 +54,7 @@ export function CalculatorSectionN2({
           step={0.1}
           hint={
             hints.n2Partial !== null
-              ? `Para passar direto: N2 Parcial ≥ ${hints.n2Partial.direct?.toFixed(1)}. Para garantir acesso à N3: N2 Parcial ≥ ${hints.n2Partial.n3Access?.toFixed(1)}.`
+              ? `Para passar direto: Parcial ${formatHint(hints.n2Partial.direct)}. Para garantir acesso à N3: Parcial ${formatHint(hints.n2Partial.n3Access)}.`
               : undefined
           }
         />
@@ -67,7 +67,7 @@ export function CalculatorSectionN2({
           step={0.1}
           hint={
             hints.n2Institutional !== null
-              ? `Passar direto: Institucional ≥ ${hints.n2Institutional.direct?.toFixed(1)} · Acessar N3: ${hints.n2Institutional.n3Access !== null && hints.n2Institutional.n3Access <= 0 ? 'qualquer nota' : `≥ ${hints.n2Institutional.n3Access?.toFixed(1)}`} na Institucional basta.`
+              ? `Passar direto: Institucional ${formatHint(hints.n2Institutional.direct)} · Acessar N3: ${formatHint(hints.n2Institutional.n3Access)} na Institucional basta.`
               : undefined
           }
         />
