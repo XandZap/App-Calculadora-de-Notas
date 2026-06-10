@@ -3,16 +3,16 @@
 import { useCalculator } from "@/hooks/use-calculator";
 import { shouldShowFieldEval } from "@/lib/calculator/rules";
 
+import { AdSenseBanner } from "./adsense-banner";
+import { CalculatorFieldEval } from "./calculator-field-eval";
+import { CalculatorFooter } from "./calculator-footer";
+import { CalculatorFormulas } from "./calculator-formulas";
 import { CalculatorHeader } from "./calculator-header";
 import { CalculatorPeriodSelector } from "./calculator-period-selector";
-import { CalculatorFieldEval } from "./calculator-field-eval";
 import { CalculatorSectionN1 } from "./calculator-section-n1";
 import { CalculatorSectionN2 } from "./calculator-section-n2";
 import { CalculatorSectionN3 } from "./calculator-section-n3";
 import { CalculatorSummary } from "./calculator-summary";
-import { CalculatorFooter } from "./calculator-footer";
-import { CalculatorFormulas } from "./calculator-formulas";
-import { AdSenseBanner } from "./adsense-banner";
 
 export function CalculatorShell() {
   const {
@@ -41,18 +41,12 @@ export function CalculatorShell() {
         {/* Coluna Esquerda — Formulário */}
         <div className="space-y-[14px] lg:space-y-[18px]">
           <div>
-            <CalculatorPeriodSelector
-              value={input.period}
-              onChange={setPeriod}
-            />
+            <CalculatorPeriodSelector value={input.period} onChange={setPeriod} />
           </div>
 
           {showFieldEval && (
             <div>
-              <CalculatorFieldEval
-                value={input.fieldEvaluation}
-                onChange={setFieldEvaluation}
-              />
+              <CalculatorFieldEval value={input.fieldEvaluation} onChange={setFieldEvaluation} />
             </div>
           )}
 
@@ -96,8 +90,8 @@ export function CalculatorShell() {
         <div className="mt-[14px] lg:mt-0 space-y-[14px] lg:space-y-[18px]">
           <div className="lg:sticky lg:top-8 lg:space-y-[18px]">
             <CalculatorSummary derived={derived} />
-            <CalculatorFooter />
             <CalculatorFormulas />
+            <CalculatorFooter />
           </div>
         </div>
 
@@ -109,3 +103,4 @@ export function CalculatorShell() {
     </div>
   );
 }
+
