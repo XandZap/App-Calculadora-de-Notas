@@ -27,12 +27,12 @@ export function CalculatorSummary({ derived }: CalculatorSummaryProps) {
         Resumo
       </p>
       <SectionCard>
-        <div className="flex items-center justify-center gap-1.5 sm:gap-2 font-mono text-sm mb-4 flex-wrap">
+        <div className="flex items-center justify-center gap-1.5 sm:gap-2 font-mono text-[13px] sm:text-sm mb-4 flex-wrap">
           <span className="text-emerald-400 font-medium">{formatGrade(n1)}</span>
           <span className="text-[#4d6a88]">+</span>
           <span className="text-purple-400 font-medium">{formatGrade(n2)}</span>
           <span className="text-[#4d6a88]">÷ 2 =</span>
-          <span className="text-[#e2e8f0] font-bold text-base">
+          <span className="text-[#e2e8f0] font-bold text-[15px] sm:text-base">
             {formatGrade(partialAverage)}
           </span>
           <span className="text-[#7a98b8] text-[10px] font-sans font-semibold uppercase tracking-wider">
@@ -40,7 +40,7 @@ export function CalculatorSummary({ derived }: CalculatorSummaryProps) {
           </span>
         </div>
         <div className="border-t border-[#1e2d45] pt-4">
-          <div className={`text-center font-sans text-sm font-semibold ${statusColor} transition-colors duration-300`}>
+          <div className={`text-center font-sans text-[13px] sm:text-sm font-semibold ${statusColor} transition-colors duration-300`}>
             {formatStatus(status)}
           </div>
           {status === "needs_n3" && requiredN3 !== null && (
