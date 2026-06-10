@@ -2,6 +2,7 @@
 
 import { useCalculator } from "@/hooks/use-calculator";
 import { shouldShowFieldEval } from "@/lib/calculator/rules";
+import { AdSenseBanner } from "./adsense-banner";
 
 import { CalculatorHeader } from "./calculator-header";
 import { CalculatorPeriodSelector } from "./calculator-period-selector";
@@ -94,6 +95,7 @@ export function CalculatorShell() {
 
         <CalculatorFooter />
         <CalculatorFormulas />
+        <AdSenseBanner />
       </main>
     </div>
   );
