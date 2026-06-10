@@ -21,12 +21,22 @@ export function formatStatus(status: string): string {
 /** Formata hint de nota necessária */
 export function formatHint(value: number | null): string {
   if (value === null) return PLACEHOLDER;
-  // Se o valor for 0, mostra "qualquer nota"
   if (value <= 0) return "qualquer nota";
   return `≥ ${value.toFixed(1)}`;
 }
 
-export function formatHintBlock(direct: number | null, n3Access: number | null): string {
+/**
+ * Formata hint para o bloco N2 (média necessária na N2).
+ * Se canPassDirect=true, não menciona N3.
+ */
+export function formatHintBlock(
+  direct: number | null,
+  n3Access: number | null,
+  canPassDirect: boolean = false
+): string {
+  if (canPassDirect) {
+    return `Para passar direto: N2 ${formatHint(direct)}.`;
+  }
   if (direct === null) {
     return `Aprovação direta impossível — você já vai para a Prova Final. Para acessar a N3: N2 ${formatHint(n3Access)}.`;
   }
@@ -35,7 +45,18 @@ export function formatHintBlock(direct: number | null, n3Access: number | null):
   return `Para passar direto: N2 ${dir}. Para garantir acesso à N3: N2 ${acc}.`;
 }
 
-export function formatHintBlockInstitutional(direct: number | null, n3Access: number | null): string {
+/**
+ * Formata hint para campo Institucional.
+ * Se canPassDirect=true, não menciona N3.
+ */
+export function formatHintBlockInstitutional(
+  direct: number | null,
+  n3Access: number | null,
+  canPassDirect: boolean = false
+): string {
+  if (canPassDirect) {
+    return `Passar direto: Institucional ${formatHint(direct)}.`;
+  }
   if (direct === null) {
     return `Aprovação direta impossível — você já vai para a Prova Final. Para acessar a N3: Institucional ${formatHint(n3Access)}.`;
   }
@@ -44,7 +65,18 @@ export function formatHintBlockInstitutional(direct: number | null, n3Access: nu
   return `Passar direto: Institucional ${dir} · Acessar N3: ${acc} na Institucional basta.`;
 }
 
-export function formatHintBlockPartial(direct: number | null, n3Access: number | null): string {
+/**
+ * Formata hint para campo Parcial.
+ * Se canPassDirect=true, não menciona N3.
+ */
+export function formatHintBlockPartial(
+  direct: number | null,
+  n3Access: number | null,
+  canPassDirect: boolean = false
+): string {
+  if (canPassDirect) {
+    return `Passar direto: Parcial ${formatHint(direct)}.`;
+  }
   if (direct === null) {
     return `Aprovação direta impossível — você já vai para a Prova Final. Para acessar a N3: Parcial ${formatHint(n3Access)}.`;
   }

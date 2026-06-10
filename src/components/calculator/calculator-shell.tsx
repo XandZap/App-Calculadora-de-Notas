@@ -2,7 +2,7 @@
 
 import { useCalculator } from "@/hooks/use-calculator";
 import { shouldShowFieldEval, getN2MaxInstitutional } from "@/lib/calculator/rules";
-import { formatHint } from "@/lib/calculator/format";
+import { formatHintBlock, formatHintBlockInstitutional, formatHintBlockPartial } from "@/lib/calculator/format";
 
 import { AdSenseBanner } from "./adsense-banner";
 import { CalculatorFieldEval } from "./calculator-field-eval";
@@ -32,9 +32,11 @@ export function CalculatorShell() {
     reset,
   } = useCalculator();
 
-  const showFieldEval = shouldShowFieldEval(input.period);
+  const showFieldEvalSection = shouldShowFieldEval(input.period);
+  const showFieldScoreInput = input.fieldEvaluation === "with-field";
   const n2Max = getN2MaxInstitutional(input.fieldEvaluation);
   const showTwoInputsN1 = input.period === "1-2";
+  const canPassDirect = derived.status === "approved_direct" || (derived.partialAverage !== null && derived.partialAverage >= 6);
 
   return (
     <div className="w-full max-w-[500px] lg:max-w-[920px] mx-auto app-container">
@@ -46,7 +48,7 @@ export function CalculatorShell() {
             <CalculatorPeriodSelector value={input.period} onChange={setPeriod} />
           </div>
 
-          {showFieldEval && (
+          {showFieldEvalSection && (
             <div>
               <CalculatorFieldEval value={input.fieldEvaluation} onChange={setFieldEvaluation} />
             </div>
@@ -63,7 +65,7 @@ export function CalculatorShell() {
                     value: input.n1Partial,
                     onChange: setN1Partial,
                     hint: hints.n1Partial !== null
-                      ? `Passar direto: Parcial ${formatHint(hints.n1Partial.direct)} · Acessar N3: ${formatHint(hints.n1Partial.n3Access)} na Parcial basta.`
+                      ? formatHintBlockPartial(hints.n1Partial.direct, hints.n1Partial.n3Access, canPassDirect)
                       : undefined,
                   }]
                 : []),
@@ -72,7 +74,7 @@ export function CalculatorShell() {
                 value: input.n1Institutional,
                 onChange: setN1Institutional,
                 hint: hints.n1Institutional !== null
-                  ? `Passar direto: Institucional ${formatHint(hints.n1Institutional.direct)} · Acessar N3: ${formatHint(hints.n1Institutional.n3Access)} na Institucional basta.`
+                  ? formatHintBlockInstitutional(hints.n1Institutional.direct, hints.n1Institutional.n3Access, canPassDirect)
                   : undefined,
               },
             ]}
@@ -88,7 +90,7 @@ export function CalculatorShell() {
                 value: input.n2Partial,
                 onChange: setN2Partial,
                 hint: hints.n2Partial !== null
-                  ? `Para passar direto: Parcial ${formatHint(hints.n2Partial.direct)}. Para garantir acesso à N3: Parcial ${formatHint(hints.n2Partial.n3Access)}.`
+                  ? formatHintBlockPartial(hints.n2Partial.direct, hints.n2Partial.n3Access, canPassDirect)
                   : undefined,
               },
               {
@@ -97,10 +99,10 @@ export function CalculatorShell() {
                 onChange: setN2Institutional,
                 max: n2Max,
                 hint: hints.n2Institutional !== null
-                  ? `Passar direto: Institucional ${formatHint(hints.n2Institutional.direct)} · Acessar N3: ${formatHint(hints.n2Institutional.n3Access)} na Institucional basta.`
+                  ? formatHintBlockInstitutional(hints.n2Institutional.direct, hints.n2Institutional.n3Access, canPassDirect)
                   : undefined,
               },
-              ...(showFieldEval
+              ...(showFieldScoreInput
                 ? [{
                     label: "AVALIAÇÃO DE CAMPO",
                     value: input.n2FieldScore,
@@ -118,6 +120,8 @@ export function CalculatorShell() {
                       <span className="text-amber-400 font-semibold">Prova Final</span>. Para acessar a N3: N2{" "}
                       <span className="text-amber-400 font-semibold">≥ {hints.n2Block.n3Access?.toFixed(1) ?? "—"}</span>.
                     </>
+                  ) : canPassDirect ? (
+                    <>Para passar direto: N2 <span className="text-emerald-400 font-semibold">≥ {hints.n2Block.direct?.toFixed(1)}</span>.</>
                   ) : (
                     <>
                       Para passar direto: N2 <span className="text-emerald-400 font-semibold">≥ {hints.n2Block.direct?.toFixed(1)}</span>.
